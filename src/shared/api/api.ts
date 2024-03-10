@@ -1,7 +1,7 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
-const baseUrl = '';
+const baseUrl = 'https://64ad3ed7b470006a5ec59979.mockapi.io/api/v1/group';
 
 export const $api = axios.create({
     baseURL: baseUrl,
