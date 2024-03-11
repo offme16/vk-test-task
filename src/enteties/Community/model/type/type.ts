@@ -5,7 +5,7 @@ export interface GetGroupsResponseSchema {
     error?: string,
   }
   
-  interface Group {
+export interface Group {
     "id": number,
     "name": string,
     "closed": boolean,
@@ -14,7 +14,7 @@ export interface GetGroupsResponseSchema {
     "friends"?: User[]
   }
   
-  interface User {
+export interface User {
     "first_name": string,
     "last_name": string
   }

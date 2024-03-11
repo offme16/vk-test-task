@@ -1,47 +1,71 @@
-import { useAppDispatch } from "shared/lib/hooks/useAppDispatch";
-import cls from "./GroupList.module.scss";
-import { useSelector } from "react-redux";
-import { getData } from "enteties/Community/model/selectors/getData/getData";
-import { useEffect, useState } from "react";
-import { groupService } from "enteties/Community/model/service/groupService";
-import Modal from "shared/UI/Modal/Modal";
+import React, { useEffect, useState } from 'react';
+import cls from './GroupList.module.scss';
+import { useSelector } from 'react-redux';
+import { getData } from 'enteties/Community/model/selectors/getData/getData';
+import { useAppDispatch } from 'shared/lib/hooks/useAppDispatch';
+import { groupService } from 'enteties/Community/model/service/groupService';
+import Modal from 'shared/UI/Modal/Modal';import { Group } from 'enteties/Community/model/type/type';
 
-const GroupList = () => {
+
+interface Props {
+    privacyFilter: 'all' | 'closed' | 'open';
+    colorFilter: string;
+    friendFilter: boolean;
+}
+
+const GroupList: React.FC<Props> = ({ privacyFilter, colorFilter, friendFilter }) => {
     const [modalVisible, setModalVisible] = useState(false);
-    const [selectedId, setSelectedId] = useState(null); // Состояние для хранения id выбранного элемента
+    const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
     const dispatch = useAppDispatch();
-    const data = useSelector(getData);
+    const groups = useSelector(getData);
 
     useEffect(() => {
         dispatch(groupService());
     }, [dispatch]);
 
-    const OpenWindow = (id: number) => { // Принимаем id выбранного элемента
-        setSelectedId(id); // Сохраняем id выбранного элемента
+    const handleOpenModal = (group: Group) => {
+        setSelectedGroup(group);
         setModalVisible(true);
-    } 
+    };
+
+    const filteredGroups = groups?.filter(group => {
+        if (privacyFilter === 'all' || group.closed === (privacyFilter === 'closed')) {
+            if (colorFilter === '' || group.avatar_color === colorFilter) {
+                if (!friendFilter || (group.friends && group.friends.length > 0)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    });
 
     return (
         <div className={cls.container}>
-            {data?.map((e) => (
-                <div key={e.id} className={cls.group_box}>
-                    <div className={cls.avatar} style={{ backgroundColor: e.avatar_color }}></div>
+            {filteredGroups?.map((group) => (
+                <div key={group.id} className={cls.group_box}>
+                    <div className={cls.avatar} style={{ backgroundColor: group.avatar_color || 'transparent' }}></div>
                     <div>
-                        <h2>{e.name}</h2>
-                        <div>Подписчики: <span>{e.members_count}</span></div>
-                        {/* При клике передаем id в функцию OpenWindow */}
-                        <div className={cls.group_friends} onClick={() => OpenWindow(e.id)}>
-                            <p>Друзья:</p><span>{e.friends?.length}</span>
+                        <h2>{group.name}</h2>
+                        <div>Подписчики: <span>{group.members_count}</span></div>
+                        <div className={cls.group_friends} onClick={() => handleOpenModal(group)}>
+                            <p>Друзья:</p>
+                            <span>{group.friends?.length || 0}</span>
                         </div>
-                        <div>{e.closed ? <p>Закрытая</p> : <p>Открытая</p>}</div>
+                        <div>{group.closed ? <p>Закрытая</p> : <p>Открытая</p>}</div>
                     </div>
                 </div>
             ))}
-            {/* Передаем selectedId в модальное окно */}
-            <Modal visible={modalVisible} setVisible={setModalVisible}>{selectedId}</Modal>
+            <Modal visible={modalVisible} setVisible={setModalVisible}>
+                <h3>{selectedGroup?.name} - Список друзей</h3>
+                <ul>
+                    {selectedGroup?.friends?.map((friend, id) => (
+                        <li key={id}>{friend.first_name} {friend.last_name}</li>
+                    ))}
+                </ul>
+            </Modal>
         </div>
     );
-}
+};
 
 export default GroupList;

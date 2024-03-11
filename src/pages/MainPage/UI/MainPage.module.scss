@@ -4,4 +4,10 @@
     justify-content: center;
     height: 100%;
     flex-wrap: wrap;
+
+    .filters{
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
   }

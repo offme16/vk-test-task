@@ -22,7 +22,7 @@ export const groupService = createAsyncThunk(
 
         } catch (e) {
             const error: AxiosError<KnownError> = e as any;
-            console.log(error.message);
+            alert(error.message);
             return thunkAPI.rejectWithValue('Произошла ошибка');
         }
     },
